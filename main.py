@@ -1,6 +1,11 @@
 from functools import reduce
 from typing import Callable, List, Set
 
+from antlr4 import *
+from regex_parser.RegexParser import RegexParser
+from regex_parser.RegexLexer import RegexLexer
+from regex_parser.RegexVisitor import RegexVisitor
+
 # automata
 
 class Automaton:
@@ -84,6 +89,41 @@ class Rep(Regex):
         return vis.visitRep(self)
 
 # parser
+
+class _Parser(RegexParser):
+
+    def __init__(self, input: InputStream):
+        super().__init__(CommonTokenStream(RegexLexer(input)))
+
+    def parse(self) -> Regex:
+        exp = self.regex()
+        vis = _RegexTransformVisitor()
+        return exp.accept(vis)
+
+class _RegexTransformVisitor(RegexVisitor):
+
+    def visitAlt(self, ctx: _Parser.AltContext):
+        alts = ctx.alternative()
+        exps = list(map(self.visit, alts))
+        # alts is necessarily non-empty
+        return reduce(Alt, exps)
+    
+    def visitChr(self, ctx: _Parser.ChrContext):
+        return Chr(ctx.getText())
+    
+    def visitCat(self, ctx: _Parser.CatContext):
+        exps = list(map(self.visit, ctx.block()))
+        if len(exps) == 0: return Eps()
+        else: return reduce(Cat, exps)
+    
+    def visitPar(self, ctx: _Parser.ParContext):
+        return self.visit(ctx.regex())
+    
+    def visitRep(self, ctx: _Parser.RepContext):
+        return Rep(self.visit(ctx.block()))
+
+def parse(regex: str):
+    return _Parser(InputStream(regex)).parse()
 
 # conversion
 
@@ -194,8 +234,7 @@ class Compile:
 # examples
 
 if __name__ == "__main__":
-    # exp = parse("a(a|b)(ab)*")
-    exp = Cat(Cat(Chr("a"), Alt(Chr("a"), Chr("b"))), Rep(Cat(Chr("a"), Chr("b"))))
+    exp = parse("a(a|b)(ab)*")
     aut = exp.compile()
     assert aut.accepts("ab")
     assert aut.accepts("abab")
