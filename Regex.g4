@@ -11,9 +11,14 @@ alternative :
 block : 
     block '*' # Rep |
     '(' regex ')' # Par |
-    CHAR # Chr
+    CHAR # Chr |
+    ESCAPE # Esc
 ;
 
 CHAR :
-    [a-z]
+    ~[()*|\\]
+;
+
+ESCAPE :
+    '\\' .
 ;

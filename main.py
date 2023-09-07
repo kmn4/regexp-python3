@@ -115,6 +115,9 @@ class _RegexTransformVisitor(RegexVisitor):
         exps = list(map(self.visit, ctx.block()))
         if len(exps) == 0: return Eps()
         else: return reduce(Cat, exps)
+
+    def visitEsc(self, ctx: _Parser.EscContext):
+        return Chr(ctx.getText()[1:])
     
     def visitPar(self, ctx: _Parser.ParContext):
         return self.visit(ctx.regex())
@@ -243,3 +246,9 @@ if __name__ == "__main__":
     assert aut.accepts("aa")
     assert not aut.accepts("aaaa")
     print("done")
+
+    # use '\' as the escape character
+    exp = parse("(\(a\\\\b\))*")
+    aut = exp.compile()
+    assert aut.accepts("(a\\b)(a\\b)")
+    assert not aut.accepts("\(a\\\\b\)")

@@ -24,6 +24,11 @@ class RegexVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by RegexParser#Esc.
+    def visitEsc(self, ctx:RegexParser.EscContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by RegexParser#Chr.
     def visitChr(self, ctx:RegexParser.ChrContext):
         return self.visitChildren(ctx)
