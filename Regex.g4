@@ -1,18 +1,18 @@
 grammar Regex;
 
-regex :
-    alternative ('|' alternative)* # Alt
+regex
+    : alternative ('|' alternative)*    # Alt
 ;
 
-alternative :
-    block* # Cat
+alternative
+    : block*    # Cat
 ;
 
-block : 
-    block '*' # Rep |
-    '(' regex ')' # Par |
-    CHAR # Chr |
-    ESCAPE # Esc
+block
+    : block '*'     # Rep
+    | '(' regex ')' # Par
+    | CHAR          # Chr
+    | ESCAPE        # Esc
 ;
 
 CHAR :
